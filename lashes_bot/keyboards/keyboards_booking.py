@@ -6,7 +6,10 @@ from logic.logic import pars_date, pars_time
 
 
 # Добавление клавиатуры с датами
-def get_date_keyboard(master_id: str, service_id: str, month: str):
+def get_date_keyboard(
+    master_id: str, service_id: str, month: str
+) -> InlineKeyboardBuilder:
+    """Функция принимает id мастера, id услуги и месяц и возвращает клавиатуру с доступными датами для записи"""
 
     kb_builder = InlineKeyboardBuilder()
 
@@ -24,7 +27,10 @@ def get_date_keyboard(master_id: str, service_id: str, month: str):
 
 
 # Добавление клавиатуры с временем
-def get_time_keyboard(master_id: str, service_id: str, date: str):
+def get_time_keyboard(
+    master_id: str, service_id: str, date: str
+) -> InlineKeyboardBuilder:
+    """Функция принимает id мастера, id услуги и дату и возвращает клавиатуру с доступным временем для записи"""
 
     kb_builder = InlineKeyboardBuilder()
 

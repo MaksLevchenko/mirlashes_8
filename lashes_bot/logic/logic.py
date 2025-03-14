@@ -1,4 +1,4 @@
-from models.models import Master, Massage
+from models.models import Master, Service
 from config.config import load_config, pg_manager
 
 import requests
@@ -42,6 +42,7 @@ r = requests.get(url=url, headers=headers)
 
 # Функция парсинга мастеров
 def pars_master() -> dict:
+    """Добавляет мастеров с сайта yclients"""
     masters: dict[int : Master()] = {}
     for i in r.json()["data"]:
         master = Master()
@@ -63,6 +64,7 @@ def pars_master() -> dict:
 
 # Функция парсинга массажей для конкретного мастера
 def pars_services_mast(master_id: str) -> dict:
+    """Добавляет массажи для конкретного мастера с сайта yclients"""
     url = f"https://api.yclients.com/api/v1/book_services/550726?staff_id={master_id}"
 
     r = requests.get(url=url, headers=headers)
@@ -74,11 +76,12 @@ def pars_services_mast(master_id: str) -> dict:
 
 # Функция парсинга услуг
 def pars_services() -> dict:
+    """Добавляет услуги с сайта yclients"""
     url = "https://api.yclients.com/api/v1/book_services/550726"
     r = requests.get(url=url, headers=headers)
-    services: dict[int : Massage()] = {}
+    services: dict[int : Service()] = {}
     for mass in r.json()["data"]["services"]:
-        service = Massage()
+        service = Service()
         service.id = mass["id"]
         service.name = mass["title"]
         service.description = mass["comment"]
@@ -91,6 +94,7 @@ def pars_services() -> dict:
 
 # Функция парсинга времени для записи
 def pars_time(master_id: str, service_id: str, date: str) -> dict:
+    """Выводит время для записи для конкретного мастера, услуги и на определённый день"""
     url = f"https://api.yclients.com/api/v1/book_times/550726/{master_id}/{date}?service_ids={service_id}"
 
     r = requests.get(url=url, headers=headers)
@@ -99,6 +103,7 @@ def pars_time(master_id: str, service_id: str, date: str) -> dict:
 
 # Функция парсинга даты для записи
 def pars_date(master_id: str, service_id: str) -> dict:
+    """Выводит даты для записи для конкретного мастера и услуги"""
     url = f"https://api.yclients.com/api/v1/book_dates/550726?staff_id={master_id}&service_ids={service_id}"
     r = requests.get(url=url, headers=headers)
     return r.json()["data"]
@@ -106,6 +111,7 @@ def pars_date(master_id: str, service_id: str) -> dict:
 
 # Функция записи
 def to_booking(json: dict):
+    """Создаёт запись на сеанс"""
     r = requests.post(
         url="https://api.yclients.com/api/v1/book_record/550726",
         json=json,
@@ -120,7 +126,8 @@ masters = pars_master()
 
 
 # Функция поиска мастера по id
-def search_master_to_id(id: int):
+def search_master_to_id(id: int) -> Master:
+    """По id находит нужного мастера"""
 
     for master in masters.values():
         if master.id == id:
@@ -128,7 +135,8 @@ def search_master_to_id(id: int):
 
 
 # Функция поиска услуги по id
-def search_service_to_id(id: int):
+def search_service_to_id(id: int) -> Service:
+    """По id находит нужную услугу"""
 
     for service in services.values():
         if service.id == id:
@@ -137,6 +145,7 @@ def search_service_to_id(id: int):
 
 # Функция поиска пользователя по id
 async def get_user_to_id(id: int):
+    """По id находит нужного пользователя"""
     async with pg_manager:
         user = await pg_manager.select_data(
             table_name="rachat_client",

@@ -12,6 +12,10 @@ services = pars_services()
 
 # Создание кнопок
 def create_button(text: str, callback_data: str | int) -> InlineKeyboardButton:
+    """
+    Функция для создания кнопок
+
+    """
     button = InlineKeyboardButton(text=text, callback_data=callback_data)
     return button
 
@@ -20,6 +24,9 @@ def create_button(text: str, callback_data: str | int) -> InlineKeyboardButton:
 def add_keyboard(
     width: int, *args: str | tuple[str], **kwargs: str
 ) -> InlineKeyboardMarkup:
+    """
+    Функция для создания клавиатур
+    """
 
     kb_builder = InlineKeyboardBuilder()
 
@@ -56,7 +63,10 @@ def add_keyboard(
 
 
 # Добавление клавиатуры с услугами
-def get_services_keyboard():
+def get_services_keyboard() -> InlineKeyboardBuilder:
+    """
+    Функция для создания клавиатуры с услугами
+    """
 
     kb_builder = InlineKeyboardBuilder()
     services = pars_services()
@@ -73,7 +83,10 @@ def get_services_keyboard():
 
 
 # Добавление клавиатуры с услугами для конкретного мастера
-def get_mast_services_keyboard(master_id: str):
+def get_mast_services_keyboard(master_id: str) -> InlineKeyboardBuilder:
+    """
+    Функция для создания клавиатуры с услугами для конкретного мастера
+    """
 
     kb_builder = InlineKeyboardBuilder()
     services = pars_services()
