@@ -4,10 +4,10 @@ COPY requirements.txt /temp/requirements.txt
 
 COPY .env /.env
 
-COPY massage_bot /massage_bot
+COPY lashes_bot /lashes_bot
 
-ADD /massage_bot/bot.py /massage_bot/
+ADD /lashes_bot/bot.py /lashes_bot/
 
-WORKDIR /massage_bot
+WORKDIR /lashes_bot
 
 RUN pip install -r /temp/requirements.txt
