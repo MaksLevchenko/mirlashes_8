@@ -1,5 +1,5 @@
 services:
-  mesto_massaga:
+  mirlashes:
     build:
       context: .
 
@@ -14,37 +14,26 @@ services:
     #   - DB_USER=env_file(USER_DB)
     #   - DB_PASS=env_file(PASS_DB)
 
-    command: >
-      sh -c "python bot.py"
+    command: python bot.py
 
     depends_on:
       - database
-      - web
     restart: always
-
-  web:
-   build:
-    dockerfile:
-     Dockerfile.web
-   command: python3 manage.py runserver 0.0.0.0:8000
-
-   depends_on:
-      - database
-   restart: always
-   ports:
-      - "8000:8000"
 
   database:
     image: postgres:14.6-alpine
     restart: always
-    env_file:
-      - .env
+    env_file: .env
     environment:
-      - POSTGRES_DB=env_file(NAME_DB)
-      - POSTGRES_USER=env_file(USER_DB)
-      - POSTGRES_PASSWORD=env_file(PASS_DB)
-      - POSTGRES_PORT=5432
-      - POSTGRES_HOST=database
+      POSTGRES_DB: ${NAME_DB}
+      POSTGRES_USER: ${USER_DB}
+      POSTGRES_PASSWORD: ${PASS_DB}
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: database
 
     expose:
       - 5432
+
+networks:
+  grid-network:
+    driver: bridge

@@ -128,7 +128,7 @@ async def upload_booking(callback: CallbackQuery, state: FSMContext):
     # client = {}
     async with pg_manager:
         client = await pg_manager.select_data(
-            table_name="users_reg", where_dict={"user_id": id}
+            table_name="rachat_client", where_dict={"user_id": id}
         )
 
     json = {

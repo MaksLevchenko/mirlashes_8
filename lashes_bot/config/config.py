@@ -4,7 +4,7 @@ import dotenv
 from asyncpg_lite import DatabaseManager
 
 
-# dotenv.load_dotenv()
+dotenv.load_dotenv()
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Config:
 
 
 def load_config() -> Config:
-    dotenv.load_dotenv()
+    # dotenv.load_dotenv()
     return Config(
         tg_bot=TgBot(
             token=os.getenv("BOT_TOKEN"),
@@ -55,7 +55,7 @@ def load_config() -> Config:
 config = load_config()
 
 pg_manager = DatabaseManager(
-    # db_url=f'postgresql://{config.db.db_user}:{config.db.db_password}@database:5432/{config.db.database}',
-    db_url=f"postgresql://{config.db.db_user}:{config.db.db_password}@{config.db.db_host}:5432/{config.db.database}",
+    db_url=f"postgresql://{config.db.db_user}:{config.db.db_password}@database:5432/{config.db.database}",
+    # db_url=f"postgresql://{config.db.db_user}:{config.db.db_password}@{config.db.db_host}:5432/{config.db.database}",
     deletion_password=config.db.db_password,
 )

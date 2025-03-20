@@ -23,13 +23,18 @@ BOT_TOKEN = config.tg_bot.token
 async def main():
 
     # Создаём базу данных клиентов
-    # async with pg_manager:
-    #     columns = [
-    #             {"name": "user_id", "type": Integer, "options": {"primary_key": True, "autoincrement": False}},
-    #             {"name": "name", "type": String},
-    #             {"name": "phone", "type": String},
-    #             {"name": "comment", "type": String},]
-    #     await pg_manager.create_table(table_name='users_reg', columns=columns)
+    async with pg_manager:
+        columns = [
+            {
+                "name": "user_id",
+                "type": Integer,
+                "options": {"primary_key": True, "autoincrement": False},
+            },
+            {"name": "name", "type": String},
+            {"name": "phone", "type": String},
+            {"name": "comment", "type": String},
+        ]
+        await pg_manager.create_table(table_name="rachat_client", columns=columns)
 
     # Инициализируем хранилище (создаем экземпляр класса MemoryStorage)
     storage = MemoryStorage()

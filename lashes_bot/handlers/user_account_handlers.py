@@ -143,10 +143,7 @@ async def upload_user(callback: CallbackQuery, state: FSMContext):
     if len(data) == 1:
         user = {}
         async with pg_manager:
-            for row in await pg_manager.select_data(
-                # "users_reg"
-                "rachat_client"
-            ):
+            for row in await pg_manager.select_data("rachat_client"):
                 if row["user_id"] == id:
                     user = row
         name = user["name"]
