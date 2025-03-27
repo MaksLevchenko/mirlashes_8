@@ -1,6 +1,7 @@
 .env
 .venv
 new.py
+dependencies.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

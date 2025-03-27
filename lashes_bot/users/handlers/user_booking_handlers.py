@@ -1,4 +1,5 @@
 from keyboards.keyboards_booking import get_date_keyboard, get_time_keyboard
+from users.crud import get_user_to_telegram_id
 from logic.logic import (
     pars_date,
     pars_services,
@@ -8,7 +9,7 @@ from logic.logic import (
 )
 from keyboards.keyboards_mas import add_keyboard, get_mast_services_keyboard
 from lexicon.lexicon import LEXICON_MONTH
-from config.config import load_config, pg_manager
+
 from state.states import FSMBooking
 
 import datetime
@@ -16,14 +17,12 @@ from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import default_state
 
 
 router = Router()
 
 year = datetime.datetime.today().year
 
-config = load_config()
 
 services = pars_services()
 
@@ -125,18 +124,13 @@ async def upload_booking(callback: CallbackQuery, state: FSMContext):
     id = int(callback.from_user.id)
     service = search_service_to_id(int(booking_data["service_id"]))
     master = search_master_to_id(int(booking_data["master_id"]))
-    # client = {}
-    async with pg_manager:
-        client = await pg_manager.select_data(
-            table_name="rachat_client", where_dict={"user_id": id}
-        )
-
+    client = await get_user_to_telegram_id(tele_id=id)
     json = {
-        "phone": client[0]["phone"],
-        "fullname": client[0]["name"],
+        "phone": client.phone,
+        "fullname": client.name,
         "email": "",
         "code": "",
-        "comment": client[0]["comment"] + "\n\nЭта запись создана с помощью telegram",
+        "comment": client.comment + "\n\nЭта запись создана с помощью telegram",
         "type": "mobile",
         "notify_by_sms": 6,
         "notify_by_email": 24,

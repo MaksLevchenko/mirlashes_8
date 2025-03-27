@@ -1,5 +1,7 @@
 from keyboards.keyboards_mas import add_keyboard
-from config.config import load_config, pg_manager
+
+from db.models.models import Client
+from users.crud import add_user, get_user_to_telegram_id, update_model
 from state.states import FSMEditAccaunt, FSMEditUser
 
 import datetime
@@ -12,8 +14,6 @@ from aiogram.fsm.state import default_state
 router = Router()
 
 year = datetime.datetime.today().year
-
-config = load_config()
 
 
 # Этот хэндлер будет срабатывать после нажтия на кнопку "Заполнить анкету"
@@ -141,14 +141,10 @@ async def upload_user(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     id = callback.from_user.id
     if len(data) == 1:
-        user = {}
-        async with pg_manager:
-            for row in await pg_manager.select_data("rachat_client"):
-                if row["user_id"] == id:
-                    user = row
-        name = user["name"]
-        phone = user["phone"]
-        comment = user["comment"]
+        user = await get_user_to_telegram_id(tele_id=id)
+        name = user.name
+        phone = user.phone
+        comment = user.comment
         if "name" in data:
             name = data["name"]
         if "phone" in data:
@@ -156,45 +152,27 @@ async def upload_user(callback: CallbackQuery, state: FSMContext):
         if "comment" in data:
             comment = data["comment"]
         user_info = {
-            "user_id": int(id),
+            "telega_id": id,
             "name": name,
             "phone": phone,
             "comment": comment,
         }
-        async with pg_manager:
-            await pg_manager.insert_data_with_update(
-                table_name="rachat_client",
-                records_data=user_info,
-                conflict_column="user_id",
-                update_on_conflict=True,
-            )
+        await update_model(user_info, Client)
     else:
         name = data["name"]
         phone = data["phone"]
-        if len(data) >= 3:
+        if data.get("comment"):
             comment = data["comment"]
-            user_info = {
-                "user_id": id,
-                "name": name,
-                "phone": phone,
-                "comment": comment,
-            }
-            async with pg_manager:
-                await pg_manager.insert_data_with_update(
-                    table_name="rachat_client",
-                    records_data=user_info,
-                    conflict_column="user_id",
-                    update_on_conflict=True,
-                )
         else:
-            user_info = {"user_id": id, "name": name, "phone": phone, "comment": ""}
-            async with pg_manager:
-                await pg_manager.insert_data_with_update(
-                    table_name="rachat_client",
-                    records_data=user_info,
-                    conflict_column="user_id",
-                    update_on_conflict=True,
-                )
+            comment = ""
+
+        user_info = {
+            "telega_id": id,
+            "name": name,
+            "phone": phone,
+            "comment": comment,
+        }
+        await add_user(user_info, Client)
     await callback.message.answer(
         text="Спасибо за уделённое время!\n\nТеперь можете записаться на сеанс!"
     )

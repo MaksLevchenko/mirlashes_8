@@ -1,61 +1,60 @@
-from dataclasses import dataclass
-import os
-import dotenv
-from asyncpg_lite import DatabaseManager
+from pathlib import Path
+
+from pydantic import model_validator, PostgresDsn, Field
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-dotenv.load_dotenv()
-
-
-@dataclass
-class DatabaseConfig:
-    database: str
-    db_host: str
-    db_user: str
-    db_password: str
-
-
-@dataclass
-class TgBot:
-    token: str
-
-
-@dataclass
-class Yclients:
-    token: str
-    key: str
-
-
-@dataclass
-class Config:
-    tg_bot: TgBot
-    db: DatabaseConfig
-    yc: Yclients
-
-
-def load_config() -> Config:
-    # dotenv.load_dotenv()
-    return Config(
-        tg_bot=TgBot(
-            token=os.getenv("BOT_TOKEN"),
-        ),
-        db=DatabaseConfig(
-            database=os.getenv("NAME_DB"),
-            db_host=os.getenv("HOST_DB"),
-            db_user=os.getenv("USER_DB"),
-            db_password=os.getenv("PASS_DB"),
-        ),
-        yc=Yclients(
-            token=os.getenv("YCLIENTS_TOKEN_PARTNER"),
-            key=os.getenv("YCLIENTS_TOKEN_KEY"),
-        ),
+class Config(BaseSettings):
+    # Конфигурация модели
+    model_config = SettingsConfigDict(
+        env_file="../.env",  # Файл с переменными окружения
+        extra="ignore",  # Игнорируем лишние значения в env файле
+        # env_file_encoding="utf-8",
     )
 
+    # Postgres
+    pg_scheme: str = "postgresql+psycopg"
+    pg_host: str = "127.0.0.1"
+    pg_port: int = 5432
+    pg_db: str | None = None
+    pg_user: str | None = None
+    pg_password: str | None = None
 
-config = load_config()
+    pg_engine_echo: bool = False  # # Вывод сгенерированных запросов в логи
 
-pg_manager = DatabaseManager(
-    db_url=f"postgresql://{config.db.db_user}:{config.db.db_password}@database:5432/{config.db.database}",
-    # db_url=f"postgresql://{config.db.db_user}:{config.db.db_password}@{config.db.db_host}:5432/{config.db.database}",
-    deletion_password=config.db.db_password,
-)
+    postgres_url: str | None = None
+
+    # Телеграм бот
+    bot_token: str = Field(..., env="BOT_TOKEN")
+    # bot_token: str = "BOT_TOKEN"
+
+    # Yclients
+    yclients_token: str = Field(...)
+    yclients_token_key: str = Field(...)
+    yclients_token_partner: str = Field(...)
+
+    @model_validator(mode="after")
+    def setting_validator(self) -> "Config":
+        file_version = ".version"
+        if Path(file_version).exists():
+            with open(file_version, "r") as fp:
+                self.app_version = fp.readline()
+
+        if not self.postgres_url:
+            self.postgres_url = str(
+                PostgresDsn.build(
+                    scheme=self.pg_scheme,
+                    username=self.pg_user,
+                    password=self.pg_password,
+                    host=self.pg_host,
+                    # host="database",
+                    port=self.pg_port,
+                    path=self.pg_db,
+                )
+            )
+
+        return self
+
+
+config = Config()
